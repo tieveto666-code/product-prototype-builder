@@ -1,0 +1,8 @@
+interface:
+  display_name: "产品原型构建器"
+  short_description: "将产品想法转为 PRD 和 HTML 原型"
+  brand_color: "#2563EB"
+  default_prompt: "使用 $product-prototype-builder 和我讨论产品想法，生成版本化 PRD，并创建单文件可交互 HTML 原型。"
+
+policy:
+  allow_implicit_invocation: true
