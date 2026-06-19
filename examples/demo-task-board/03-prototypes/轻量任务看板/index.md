@@ -6,11 +6,17 @@
 
 ## 如何预览
 
-在浏览器中直接打开 HTML 文件即可，无需安装依赖。
+**在线演示（推荐）：** [demo.html](https://htmlpreview.github.io/?https://raw.githubusercontent.com/tieveto666-code/product-prototype-builder/main/demo.html)
+
+本地打开：克隆仓库后，在浏览器中打开根目录 `demo.html` 或本目录下的 `v001-轻量任务看板.html`。
 
 ```bash
+open demo.html
+# 或
 open examples/demo-task-board/03-prototypes/轻量任务看板/v001-轻量任务看板.html
 ```
+
+> GitHub Raw 链接无法运行交互，请使用在线演示或本地打开。
 
 ## 交互清单摘要
 

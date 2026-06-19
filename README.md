@@ -4,6 +4,8 @@
 
 适合产品经理、设计师、独立开发者，以及希望在 Cursor、Codex 等 AI 工具中标准化「从 0 到 1 做原型」流程的使用者。
 
+**在线演示（轻量任务看板示例）：** [点击体验 demo.html](https://htmlpreview.github.io/?https://raw.githubusercontent.com/tieveto666-code/product-prototype-builder/main/demo.html)
+
 ## 解决什么问题
 
 很多 AI 原型工具的问题是：
@@ -35,8 +37,9 @@ flowchart LR
 ```text
 product-prototype-builder/
 ├── README.md
+├── demo.html                           # 在线演示入口（示例原型副本）
 ├── LICENSE
-├── SKILL.md                          # Cursor / Codex Skill 主文件
+├── SKILL.md                            # Cursor / Codex Skill 主文件
 ├── agents/
 │   └── openai.yaml                   # Codex Agent 配置（可选）
 ├── references/
@@ -53,7 +56,14 @@ product-prototype-builder/
 
 ### Cursor
 
-推荐在 Cursor 中使用 Project Rules / 自定义规则方式引入本 Skill：
+**方式 A：全局 Skill（推荐）**
+
+```bash
+git clone https://github.com/tieveto666-code/product-prototype-builder.git
+cp -R product-prototype-builder ~/.cursor/skills/
+```
+
+**方式 B：项目规则**
 
 ```bash
 git clone https://github.com/tieveto666-code/product-prototype-builder.git
@@ -90,11 +100,16 @@ cp -R product-prototype-builder ~/.codex/skills/
 
 本仓库包含一个完整脱敏示例：**轻量任务看板**。
 
-1. 阅读需求讨论：`examples/demo-task-board/01-discussions/轻量任务看板-讨论.md`
-2. 阅读 PRD：`examples/demo-task-board/02-specifications/轻量任务看板/v001-轻量任务看板-方案.md`
-3. 在浏览器中打开原型：`examples/demo-task-board/03-prototypes/轻量任务看板/v001-轻量任务看板.html`
+| 步骤 | 内容 |
+|------|------|
+| 在线演示 | [demo.html 可交互原型](https://htmlpreview.github.io/?https://raw.githubusercontent.com/tieveto666-code/product-prototype-builder/main/demo.html) |
+| 需求讨论 | `examples/demo-task-board/01-discussions/轻量任务看板-讨论.md` |
+| PRD | `examples/demo-task-board/02-specifications/轻量任务看板/v001-轻量任务看板-方案.md` |
+| 版本化原型 | `examples/demo-task-board/03-prototypes/轻量任务看板/v001-轻量任务看板.html` |
 
 示例原型支持看板拖拽、任务增删改查、搜索筛选、统计视图和 `localStorage` 持久化。
+
+> **说明：** GitHub 的 Raw 链接只能查看 HTML 源码，无法运行交互。请使用上方在线演示链接，或下载 / 克隆仓库后在本地用浏览器打开 `demo.html`。
 
 ## 核心特性
 

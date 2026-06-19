@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>轻量任务看板 v001 · 产品原型</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --danger: #dc2626;
+      --success: #16a34a;
+      --warning: #ea580c;
+      --radius: 12px;
+      --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .app { display: flex; min-height: 100vh; }
+    .sidebar {
+      width: 220px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .brand { font-size: 18px; font-weight: 700; padding: 8px 12px 20px; color: var(--primary); }
+    .nav-item {
+      padding: 12px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      color: var(--muted);
+      transition: 0.2s;
+    }
+    .nav-item:hover { background: #eff6ff; color: var(--primary); }
+    .nav-item.active { background: #dbeafe; color: var(--primary); font-weight: 600; }
+    .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .topbar h1 { font-size: 22px; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .input, .select {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      background: #fff;
+      min-width: 180px;
+    }
+    .btn {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary { background: #eef2ff; color: var(--primary); }
+    .btn-danger { background: #fee2e2; color: var(--danger); }
+    .content { padding: 24px; flex: 1; }
+    .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .column {
+      background: #f1f5f9;
+      border-radius: var(--radius);
+      padding: 16px;
+      min-height: 420px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .column.drag-over { outline: 2px dashed var(--primary); background: #eff6ff; }
+    .column-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .column-title { font-weight: 700; }
+    .count {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: var(--shadow);
+      cursor: grab;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .card:active { cursor: grabbing; }
+    .card-title { font-weight: 600; line-height: 1.4; }
+    .card-meta { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .tag {
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+    .tag.high { background: #fee2e2; color: #b91c1c; }
+    .tag.medium { background: #ffedd5; color: #c2410c; }
+    .tag.low { background: #e2e8f0; color: #475569; }
+    .assignee { font-size: 12px; color: var(--muted); }
+    .card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .card-actions button {
+      border: none;
+      background: #f8fafc;
+      color: var(--muted);
+      padding: 6px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .card-actions button:hover { background: #e2e8f0; color: var(--text); }
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 24px 12px;
+      border: 1px dashed var(--border);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.6);
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+    }
+    .stat-label { color: var(--muted); font-size: 14px; margin-bottom: 8px; }
+    .stat-value { font-size: 32px; font-weight: 700; color: var(--primary); }
+    .chart-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+    .chart-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+    .overlay {
+      position: fixed; inset: 0; background: rgba(15,23,42,0.45);
+      display: none; align-items: center; justify-content: center;
+      padding: 24px; z-index: 20;
+    }
+    .overlay.show { display: flex; }
+    .modal {
+      background: #fff; border-radius: 16px; width: 100%; max-width: 480px;
+      box-shadow: var(--shadow); padding: 24px;
+    }
+    .modal h2 { margin-bottom: 16px; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; margin-bottom: 6px; font-size: 14px; font-weight: 600; }
+    .error { color: var(--danger); font-size: 12px; margin-top: 6px; display: none; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+    .toast {
+      position: fixed; right: 24px; bottom: 24px; background: #0f172a; color: #fff;
+      padding: 12px 16px; border-radius: 10px; opacity: 0; transform: translateY(12px);
+      transition: 0.25s; z-index: 30; pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .hidden { display: none !important; }
+    @media (max-width: 960px) {
+      .app { flex-direction: column; }
+      .sidebar { width: 100%; flex-direction: row; overflow-x: auto; }
+      .board, .stats-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">轻量任务看板</div>
+      <div class="nav-item active" data-view="board">看板</div>
+      <div class="nav-item" data-view="stats">统计</div>
+    </aside>
+    <div class="main">
+      <header class="topbar">
+        <h1 id="pageTitle">任务看板</h1>
+        <div class="toolbar">
+          <input class="input" id="searchInput" placeholder="搜索任务标题..." />
+          <select class="select" id="priorityFilter">
+            <option value="all">全部优先级</option>
+            <option value="high">高优先级</option>
+            <option value="medium">中优先级</option>
+            <option value="low">低优先级</option>
+          </select>
+          <button class="btn btn-primary" id="createBtn">新建任务</button>
+        </div>
+      </header>
+      <main class="content">
+        <section id="boardView">
+          <div class="board">
+            <div class="column" data-status="todo">
+              <div class="column-header"><span class="column-title">待办</span><span class="count" id="count-todo">0</span></div>
+              <div class="cards" id="col-todo"></div>
+            </div>
+            <div class="column" data-status="doing">
+              <div class="column-header"><span class="column-title">进行中</span><span class="count" id="count-doing">0</span></div>
+              <div class="cards" id="col-doing"></div>
+            </div>
+            <div class="column" data-status="done">
+              <div class="column-header"><span class="column-title">已完成</span><span class="count" id="count-done">0</span></div>
+              <div class="cards" id="col-done"></div>
+            </div>
+          </div>
+        </section>
+        <section id="statsView" class="hidden">
+          <div class="stats-grid">
+            <div class="stat-card"><div class="stat-label">待办</div><div class="stat-value" id="stat-todo">0</div></div>
+            <div class="stat-card"><div class="stat-label">进行中</div><div class="stat-value" id="stat-doing">0</div></div>
+            <div class="stat-card"><div class="stat-label">已完成</div><div class="stat-value" id="stat-done">0</div></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">优先级分布</div>
+            <svg id="priorityChart" width="100%" height="220" viewBox="0 0 600 220"></svg>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div class="overlay" id="taskModal">
+    <div class="modal">
+      <h2 id="modalTitle">新建任务</h2>
+      <div class="form-group">
+        <label for="taskTitle">任务标题</label>
+        <input class="input" id="taskTitle" maxlength="80" placeholder="请输入任务标题" style="width:100%" />
+        <div class="error" id="titleError">任务标题不能为空</div>
+      </div>
+      <div class="form-group">
+        <label for="taskPriority">优先级</label>
+        <select class="select" id="taskPriority" style="width:100%">
+          <option value="high">高</option>
+          <option value="medium" selected>中</option>
+          <option value="low">低</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="taskAssignee">负责人</label>
+        <input class="input" id="taskAssignee" placeholder="例如：张三" style="width:100%" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="cancelModal">取消</button>
+        <button class="btn btn-primary" id="saveTask">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="deleteModal">
+    <div class="modal">
+      <h2>确认删除</h2>
+      <p style="color:var(--muted); line-height:1.6;">删除后无法恢复，确定要删除这条任务吗？</p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="cancelDelete">取消</button>
+        <button class="btn btn-danger" id="confirmDelete">删除</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const STORAGE_KEY = "demo-task-board-v001";
+    const priorityLabel = { high: "高", medium: "中", low: "低" };
+    const statusLabel = { todo: "待办", doing: "进行中", done: "已完成" };
+    let tasks = [];
+    let editingId = null;
+    let deletingId = null;
+    let dragTaskId = null;
+
+    const defaultTasks = [
+      { id: "t1", title: "整理本周需求清单", priority: "high", assignee: "Alice", status: "todo", createdAt: "2026-05-28" },
+      { id: "t2", title: "设计看板交互原型", priority: "medium", assignee: "Bob", status: "doing", createdAt: "2026-05-29" },
+      { id: "t3", title: "编写验收标准", priority: "low", assignee: "Carol", status: "done", createdAt: "2026-05-27" },
+      { id: "t4", title: "评审 PRD 文档", priority: "high", assignee: "Dave", status: "todo", createdAt: "2026-05-30" }
+    ];
+
+    function uid() { return "t" + Math.random().toString(36).slice(2, 9); }
+    function toast(msg) {
+      const el = document.getElementById("toast");
+      el.textContent = msg;
+      el.classList.add("show");
+      setTimeout(() => el.classList.remove("show"), 2200);
+    }
+    function save() {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks)); }
+      catch (e) { toast("本地存储不可用，本次修改仅在当前会话有效"); }
+    }
+    function load() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        tasks = raw ? JSON.parse(raw) : [...defaultTasks];
+      } catch (e) { tasks = [...defaultTasks]; }
+    }
+    function filteredTasks() {
+      const q = document.getElementById("searchInput").value.trim().toLowerCase();
+      const p = document.getElementById("priorityFilter").value;
+      return tasks.filter(t => {
+        const matchQ = !q || t.title.toLowerCase().includes(q);
+        const matchP = p === "all" || t.priority === p;
+        return matchQ && matchP;
+      });
+    }
+    function renderBoard() {
+      ["todo", "doing", "done"].forEach(status => {
+        const container = document.getElementById("col-" + status);
+        const list = filteredTasks().filter(t => t.status === status);
+        document.getElementById("count-" + status).textContent = list.length;
+        container.innerHTML = "";
+        if (!list.length) {
+          container.innerHTML = '<div class="empty">暂无任务，点击右上角新建</div>';
+          return;
+        }
+        list.forEach(task => {
+          const card = document.createElement("div");
+          card.className = "card";
+          card.draggable = true;
+          card.dataset.id = task.id;
+          card.innerHTML = `
+            <div class="card-title">${escapeHtml(task.title)}</div>
+            <div class="card-meta">
+              <span class="tag ${task.priority}">${priorityLabel[task.priority]}</span>
+              <span class="assignee">${escapeHtml(task.assignee || "未分配")}</span>
+            </div>
+            <div class="card-actions">
+              <button data-action="edit">编辑</button>
+              <button data-action="move-doing">移至进行中</button>
+              <button data-action="move-done">移至已完成</button>
+              <button data-action="delete">删除</button>
+            </div>`;
+          card.addEventListener("dragstart", () => { dragTaskId = task.id; });
+          card.addEventListener("dragend", () => { dragTaskId = null; document.querySelectorAll(".column").forEach(c => c.classList.remove("drag-over")); });
+          card.querySelector('[data-action="edit"]').onclick = (e) => { e.stopPropagation(); openEdit(task.id); };
+          card.querySelector('[data-action="delete"]').onclick = (e) => { e.stopPropagation(); openDelete(task.id); };
+          card.querySelector('[data-action="move-doing"]').onclick = (e) => { e.stopPropagation(); moveTask(task.id, "doing"); };
+          card.querySelector('[data-action="move-done"]').onclick = (e) => { e.stopPropagation(); moveTask(task.id, "done"); };
+          container.appendChild(card);
+        });
+      });
+      renderStats();
+    }
+    function renderStats() {
+      const counts = { todo: 0, doing: 0, done: 0 };
+      const pri = { high: 0, medium: 0, low: 0 };
+      tasks.forEach(t => { counts[t.status]++; pri[t.priority]++; });
+      document.getElementById("stat-todo").textContent = counts.todo;
+      document.getElementById("stat-doing").textContent = counts.doing;
+      document.getElementById("stat-done").textContent = counts.done;
+      const svg = document.getElementById("priorityChart");
+      const data = [
+        { label: "高", value: pri.high, color: "#dc2626" },
+        { label: "中", value: pri.medium, color: "#ea580c" },
+        { label: "低", value: pri.low, color: "#64748b" }
+      ];
+      const max = Math.max(...data.map(d => d.value), 1);
+      svg.innerHTML = data.map((d, i) => {
+        const barH = (d.value / max) * 140;
+        const x = 80 + i * 160;
+        const y = 170 - barH;
+        return `
+          <rect x="${x}" y="${y}" width="80" height="${barH}" rx="8" fill="${d.color}" opacity="0.85"></rect>
+          <text x="${x + 40}" y="190" text-anchor="middle" fill="#64748b" font-size="14">${d.label}</text>
+          <text x="${x + 40}" y="${y - 8}" text-anchor="middle" fill="#0f172a" font-size="14" font-weight="700">${d.value}</text>`;
+      }).join("");
+    }
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, s => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[s]));
+    }
+    function openCreate() {
+      editingId = null;
+      document.getElementById("modalTitle").textContent = "新建任务";
+      document.getElementById("taskTitle").value = "";
+      document.getElementById("taskPriority").value = "medium";
+      document.getElementById("taskAssignee").value = "";
+      document.getElementById("titleError").style.display = "none";
+      document.getElementById("taskModal").classList.add("show");
+    }
+    function openEdit(id) {
+      const task = tasks.find(t => t.id === id);
+      if (!task) return;
+      editingId = id;
+      document.getElementById("modalTitle").textContent = "编辑任务";
+      document.getElementById("taskTitle").value = task.title;
+      document.getElementById("taskPriority").value = task.priority;
+      document.getElementById("taskAssignee").value = task.assignee || "";
+      document.getElementById("titleError").style.display = "none";
+      document.getElementById("taskModal").classList.add("show");
+    }
+    function openDelete(id) {
+      deletingId = id;
+      document.getElementById("deleteModal").classList.add("show");
+    }
+    function moveTask(id, status) {
+      const task = tasks.find(t => t.id === id);
+      if (!task || task.status === status) return;
+      task.status = status;
+      save();
+      renderBoard();
+      toast(`任务已移至「${statusLabel[status]}」`);
+    }
+    function switchView(view) {
+      document.querySelectorAll(".nav-item").forEach(n => n.classList.toggle("active", n.dataset.view === view));
+      document.getElementById("boardView").classList.toggle("hidden", view !== "board");
+      document.getElementById("statsView").classList.toggle("hidden", view !== "stats");
+      document.getElementById("pageTitle").textContent = view === "board" ? "任务看板" : "数据统计";
+      document.querySelector(".toolbar").classList.toggle("hidden", view !== "board");
+      if (view === "stats") renderStats();
+    }
+
+    document.querySelectorAll(".nav-item").forEach(item => {
+      item.onclick = () => switchView(item.dataset.view);
+    });
+    document.getElementById("createBtn").onclick = openCreate;
+    document.getElementById("cancelModal").onclick = () => document.getElementById("taskModal").classList.remove("show");
+    document.getElementById("cancelDelete").onclick = () => document.getElementById("deleteModal").classList.remove("show");
+    document.getElementById("saveTask").onclick = () => {
+      const title = document.getElementById("taskTitle").value.trim();
+      const priority = document.getElementById("taskPriority").value;
+      const assignee = document.getElementById("taskAssignee").value.trim();
+      if (!title) {
+        document.getElementById("titleError").style.display = "block";
+        return;
+      }
+      if (editingId) {
+        const task = tasks.find(t => t.id === editingId);
+        Object.assign(task, { title, priority, assignee });
+        toast("任务已更新");
+      } else {
+        tasks.unshift({ id: uid(), title, priority, assignee, status: "todo", createdAt: new Date().toISOString().slice(0, 10) });
+        toast("任务已创建");
+      }
+      save();
+      document.getElementById("taskModal").classList.remove("show");
+      renderBoard();
+    };
+    document.getElementById("confirmDelete").onclick = () => {
+      tasks = tasks.filter(t => t.id !== deletingId);
+      save();
+      document.getElementById("deleteModal").classList.remove("show");
+      renderBoard();
+      toast("任务已删除");
+      deletingId = null;
+    };
+    document.getElementById("searchInput").oninput = renderBoard;
+    document.getElementById("priorityFilter").onchange = renderBoard;
+    document.querySelectorAll(".column").forEach(col => {
+      col.addEventListener("dragover", e => { e.preventDefault(); col.classList.add("drag-over"); });
+      col.addEventListener("dragleave", () => col.classList.remove("drag-over"));
+      col.addEventListener("drop", e => {
+        e.preventDefault();
+        col.classList.remove("drag-over");
+        if (!dragTaskId) return;
+        moveTask(dragTaskId, col.dataset.status);
+      });
+    });
+
+    load();
+    renderBoard();
+  </script>
+</body>
+</html>
